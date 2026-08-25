@@ -1,4 +1,4 @@
 interface:
-  display_name: "3D Character Workflow"
+  display_name: "Chrona: 3D Character Workflow"
   short_description: "Create human character models with Asset Center"
   default_prompt: "Use $chrona:3d-character-workflow to create a human character model from my prompt or reference image."
