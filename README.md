@@ -18,6 +18,8 @@
 
 One repository, one marketplace (`chrona-3d-assets`), and one plugin (`chrona`) containing two focused Skills:
 
+<img src="docs/img/chrona-component-flow.png" alt="Chrona workflow: 3D Character Workflow produces and publishes human-biped character and action GLBs to the personal Asset Center library; Asset Center Library semantically recalls, previews, confirms, validates, and imports selected GLBs into a Three.js or WebGL game project" width="100%">
+
 ```text
 Chrona
 ├── Asset Center Library
