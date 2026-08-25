@@ -1,17 +1,29 @@
 ---
 name: asset-center-library
-description: Use when a Codex game project needs to find, preview, choose, import, or inspect the current user's personal GLB models from Asset Center — including when the user describes a game/story to build and their existing assets should become development context.
+description: Use when the user explicitly asks to upload completed human-character workflow GLBs to Asset Center, or when a Codex game project needs to find, preview, choose, import, or inspect the user's published personal GLB models.
 ---
 
 # Asset Center Library
 
-Use the Asset Center MCP tools to bring the user's own models into the game as immutable, verified local GLB packages. Treat the local package and lock file as the integration boundary.
+Own the Asset Center library boundary in both directions: explicitly requested upload of completed human-character workflow GLBs, and immutable verified import of published personal GLBs into a game workspace. This skill does not create references, T-Poses, models, rigs, or actions.
 
-## Two entry modes
+## Three entry modes
 
 **A. 直接找模型（direct lookup）** — the user names a specific asset ("把我那个复古飞机拉进来"): `search_personal_assets` → confirm if ambiguous → `pull_asset_to_workspace`.
 
 **B. 剧本/需求驱动（story-driven manifest）** — the user describes a game, story, or scene to build ("根据这个剧本做一个 threejs 游戏"). Follow the manifest workflow below. This mode is the default whenever game development starts and the user's library may be relevant.
+
+**C. 上传已完成角色（completed-character upload）** — the user explicitly says to upload, save to Asset Center, or publish the GLBs completed by `3d-character-workflow`. Follow the upload workflow below. Never infer this permission from generation approval, output acceptance, a ready workflow status, or the fact that the files exist.
+
+## Completed-character upload workflow (mode C)
+
+1. Require an existing Character Workflow `workflowId`. If the active conversation came directly from `3d-character-workflow`, reuse its exact ID; never guess an ID from names or files.
+2. Call `get_character_workflow` once and verify the workflow is ready for upload. Report the ready base GLB and every successful selected action GLB using the refreshed `deliveries` and `actionPreviewUrls`.
+3. Treat only an immediate explicit request such as “上传”, “保存到 Asset Center”, or “发布这些资产” as authorization. Questions about whether upload is possible, generation approval, model acceptance, and action selection are not authorization.
+4. Call `publish_character_workflow` with the exact `workflowId` and `confirmedByUser: true`. This publishes the completed static character and its successful selected action GLBs as one linked Asset Center set; do not regenerate, rerig, or retarget anything.
+5. Report the returned Asset Center asset IDs, names, stable preview links, and base/action linkage. If the response does not contain enough catalog metadata, refresh the library once with `list_asset_catalog`; do not repeat the publish call.
+
+If the user asks to upload an arbitrary local GLB that is not a completed Character Workflow delivery, do not call `publish_character_workflow`. Use a dedicated personal-GLB upload tool when the host exposes one; otherwise give the Asset Center upload entry and exact local file path, and state that the upload was not performed.
 
 ## GLB recall output
 
@@ -62,7 +74,8 @@ Shared asset names, a shared repository, or generic entities such as a character
 - Never use a signed download URL in game code. The pull tool exchanges it internally and returns only workspace-relative paths.
 - Do not overwrite an existing package when its SHA-256 differs. Surface the conflict and ask whether the user wants a separately named/versioned import.
 - Preserve `asset-center.lock.json`; use `inspect_imported_assets` to understand existing imports before proposing a manifest (already-imported assets show as ✅ 已导入, no re-pull).
-- This plugin imports published GLBs. It does not generate, edit, upload, or publish assets.
+- Upload permission is single-use and scoped to the exact refreshed Character Workflow. Never replay `publish_character_workflow` after an error or version/state change without a new explicit user request.
+- This skill imports published GLBs and uploads only completed Character Workflow GLBs after explicit user authorization. It does not generate, edit, rig, or retarget assets.
 
 ## Common prompts
 
@@ -70,3 +83,4 @@ Shared asset names, a shared repository, or generic entities such as a character
 - “看看我资产中心里有哪些带动画的角色。”
 - “把我那个复古飞机模型拉进当前游戏。”
 - “列一下这个项目已经导入的 Asset Center 模型。”
+- “把刚生成的人物和动作 GLB 上传到 Asset Center。”
