@@ -38,6 +38,8 @@ fi
 git worktree remove "$deploy_worktree"
 rmdir "$deploy_tmp_root"
 
+deploy_refresh_root=${TMPDIR:-/tmp}
+cd "$deploy_refresh_root"
 codex plugin marketplace upgrade chrona-3d-assets --json
 codex plugin add chrona@chrona-3d-assets --json
 
