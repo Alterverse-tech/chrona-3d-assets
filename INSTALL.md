@@ -3,7 +3,7 @@
 Install the `chrona` plugin from the `chrona-3d-assets` marketplace. The plugin exposes two Skills:
 
 - `Chrona: Asset Center Library`
-- `Chrona: Character Workflow`
+- `Chrona: 3D Character Workflow`
 
 ## Codex
 

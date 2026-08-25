@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 import { CharacterWorkflowClientError, createCharacterWorkflowClient } from "./character-workflow-client.mjs";
 
 const SERVER_NAME = "chrona-character-workflow";
-const SERVER_VERSION = "0.1.0";
+const SERVER_VERSION = "0.1.1";
 const READ = { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true };
 const WRITE = { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true };
 

@@ -23,15 +23,15 @@ One repository, one marketplace (`chrona-3d-assets`), and one plugin (`chrona`) 
 ```text
 Chrona
 ├── Asset Center Library
-└── Character Workflow
+└── 3D Character Workflow
 ```
 
 | Skill | Type | Owns | Authentication |
 |---|---|---|---|
 | `Chrona: Asset Center Library` | Skill + MCP | Read and reuse side of your personal library: semantic recall, search, preview, confirmed selection, and safe GLB import | Asset Center OAuth / service token |
-| `Chrona: Character Workflow` | Skill + MCP | Write and production side for human-biped characters: reference → T-Pose → GLB → rig → actions → publish | Asset Center OAuth / service token |
+| `Chrona: 3D Character Workflow` | Skill + MCP | Write and production side for human-biped characters: reference → T-Pose → GLB → rig → actions → publish | Asset Center OAuth / service token |
 
-`Character Workflow` produces reusable characters and linked action GLBs in your personal Asset Center library. `Asset Center Library` finds those published assets later and brings only the confirmed files into a game project.
+`3D Character Workflow` produces reusable characters and linked action GLBs in your personal Asset Center library. `Asset Center Library` finds those published assets later and brings only the confirmed files into a game project.
 
 The two Skills share one install and one authentication model, but each can be used independently.
 
@@ -58,7 +58,7 @@ The two Skills share one install and one authentication model, but each can be u
 ### Create a human character
 
 1. Provide a person or humanoid/anime reference, or ask the host to create temporary concepts.
-2. Select one source before the formal Character Workflow begins.
+2. Select one source before the formal 3D Character Workflow begins.
 3. Review and approve the T-Pose, static model, rig, and requested actions as the workflow advances.
 4. Publish only after a final explicit confirmation; the character and its linked actions then become reusable through Asset Center Library.
 
@@ -118,9 +118,9 @@ Direct lookup uses search → ambiguity confirmation when needed → workspace i
 
 The Skill imports published GLBs only. It does not generate, edit, upload, or publish assets. Procedural-prop entries may inform a sourcing plan, but they are not downloaded as GLBs.
 
-## Character Workflow in action
+## 3D Character Workflow in action
 
-Use `Chrona: Character Workflow` to create and publish a human-biped character from a chosen visual reference.
+Use `Chrona: 3D Character Workflow` to create and publish a human-biped character from a chosen visual reference.
 
 ```text
 用这张参考图创建一个可绑定的人形角色。
@@ -134,7 +134,7 @@ Use `Chrona: Character Workflow` to create and publish a human-biped character f
 继续我现有的 Character Workbench 工作流，并把确认后的角色和动作发布到 Asset Center。
 ```
 
-The workflow supports a person or humanoid/anime character with biped proportions. Creatures, sharks, fish, quadrupeds, vehicles, props, environments, and scenes are intentionally outside this Character Workflow and are never disguised as biped jobs.
+The workflow supports a person or humanoid/anime character with biped proportions. Creatures, sharks, fish, quadrupeds, vehicles, props, environments, and scenes are intentionally outside this 3D Character Workflow and are never disguised as biped jobs.
 
 When a suitable reusable character or linked action does not exist, you can also open **[Design a Character Asset](https://studio.13-216-49-19.sslip.io/asset-center/characters/new)**. After the character and action GLBs are published, future tasks can discover them through `Asset Center Library`.
 
@@ -150,18 +150,18 @@ chrona-3d-assets/
 │   ├── .mcp.json
 │   ├── skills/
 │   │   ├── asset-center-library/
-│   │   └── character-workflow/
+│   │   └── 3d-character-workflow/
 │   ├── scripts/
 │   └── web/
 ├── INSTALL.md
 └── README.md
 ```
 
-This repository is the canonical source for the `chrona` plugin. Its current public surface is exactly the two Skills documented above: `Asset Center Library` and `Character Workflow`.
+This repository is the canonical source for the `chrona` plugin. Its current public surface is exactly the two Skills documented above: `Asset Center Library` and `3D Character Workflow`.
 
 ## Access and authentication
 
-Installation itself needs no Asset Center token. On the first authenticated library or character-workflow operation, Chrona opens the Asset Center OAuth flow in the browser. Tokens remain on the user's machine.
+Installation itself needs no Asset Center token. On the first authenticated Asset Center Library or 3D Character Workflow operation, Chrona opens the Asset Center OAuth flow in the browser. Tokens remain on the user's machine.
 
 Never paste an Asset Center token into chat or source code. `ASSET_CENTER_SERVICE_TOKEN` is only an optional environment override for CI or shared runners. Character generation may use provider credits, so paid or publishing stages stay behind explicit confirmation.
 

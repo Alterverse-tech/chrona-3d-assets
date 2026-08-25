@@ -67,7 +67,7 @@ async function registerClient(metadata, redirectUri) {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
-      client_name: "Chrona Character Workflow MCP",
+      client_name: "Chrona 3D Character Workflow MCP",
       redirect_uris: [redirectUri],
       grant_types: ["authorization_code", "refresh_token"],
       response_types: ["code"],
