@@ -122,6 +122,10 @@ The Skill imports published GLBs only. It does not generate, edit, upload, or pu
 
 Use `Chrona: 3D Character Workflow` to create and publish a human-biped character from a chosen visual reference.
 
+<img src="docs/img/3d-character-workflow-in-action.png" alt="Chrona 3D Character Workflow in Codex and Asset Center Workbench: uploaded reference image progresses through T-Pose, 3D Model, Rigged Model, and Run and Walk action GLBs" width="100%">
+
+<p align="center"><sub><b>上传参考图 → T-Pose → 3D Model → Rigged Model → Run / Walk 动作 GLB</b><br>Codex conversation and Asset Center Workbench advance the same workflow.</sub></p>
+
 ```text
 用这张参考图创建一个可绑定的人形角色。
 ```
