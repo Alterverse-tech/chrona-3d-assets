@@ -1,0 +1,21 @@
+{
+  "name": "chrona-3d-assets",
+  "interface": {
+    "displayName": "Chrona 3D Assets"
+  },
+  "plugins": [
+    {
+      "name": "chrona",
+      "version": "0.1.0",
+      "source": {
+        "source": "local",
+        "path": "./plugins/chrona"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    }
+  ]
+}

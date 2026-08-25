@@ -1,0 +1,27 @@
+{
+  "mcpServers": {
+    "chrona_asset_center_library": {
+      "command": "node",
+      "args": ["./scripts/asset-center-library/plugin-bootstrap.mjs"],
+      "cwd": ".",
+      "env_vars": [
+        "ASSET_CENTER_SERVICE_TOKEN",
+        "ASSET_CENTER_OAUTH_NO_BROWSER",
+        "ASSET_CENTER_CODEX_API_BASE_URL",
+        "ASSET_CENTER_PLUGIN_AUTO_UPDATE",
+        "ASSET_CENTER_PLUGIN_MARKETPLACE",
+        "ASSET_CENTER_PLUGIN_UPDATE_TIMEOUT_MS"
+      ]
+    },
+    "chrona_character_workflow": {
+      "command": "node",
+      "args": ["./scripts/character-workflow/asset-center-character-workflow-mcp.mjs"],
+      "cwd": ".",
+      "env_vars": [
+        "ASSET_CENTER_SERVICE_TOKEN",
+        "ASSET_CENTER_OAUTH_NO_BROWSER",
+        "ASSET_CENTER_CODEX_API_BASE_URL"
+      ]
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "name": "chrona",
+  "version": "0.1.0",
+  "description": "Create human character assets and safely reuse published Asset Center GLBs from one Chrona plugin.",
+  "author": {
+    "name": "Chrona"
+  },
+  "homepage": "https://github.com/Alterverse-tech/chrona-3d-assets",
+  "repository": "https://github.com/Alterverse-tech/chrona-3d-assets",
+  "keywords": ["3d", "glb", "game-assets", "character", "asset-center"],
+  "mcpServers": {
+    "chrona_asset_center_library": {
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/asset-center-library/plugin-bootstrap.mjs"]
+    },
+    "chrona_character_workflow": {
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/character-workflow/asset-center-character-workflow-mcp.mjs"]
+    }
+  }
+}

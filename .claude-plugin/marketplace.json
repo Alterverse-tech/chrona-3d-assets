@@ -1,0 +1,28 @@
+{
+  "name": "chrona-3d-assets",
+  "owner": {
+    "name": "Chrona"
+  },
+  "description": "Chrona 3D asset library and human character workflows for Codex and Claude Code.",
+  "plugins": [
+    {
+      "name": "chrona",
+      "source": "./plugins/chrona",
+      "description": "Create human character assets and safely reuse published Asset Center GLBs from one Chrona plugin.",
+      "version": "0.1.0",
+      "author": {
+        "name": "Chrona"
+      },
+      "homepage": "https://github.com/Alterverse-tech/chrona-3d-assets",
+      "repository": "https://github.com/Alterverse-tech/chrona-3d-assets",
+      "category": "developer-tools",
+      "keywords": [
+        "3d",
+        "glb",
+        "game-assets",
+        "character",
+        "asset-center"
+      ]
+    }
+  ]
+}

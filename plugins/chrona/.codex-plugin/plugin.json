@@ -1,0 +1,29 @@
+{
+  "name": "chrona",
+  "version": "0.1.0",
+  "description": "Create human character assets and safely reuse published Asset Center GLBs from one Chrona plugin.",
+  "author": {
+    "name": "Chrona"
+  },
+  "homepage": "https://github.com/Alterverse-tech/chrona-3d-assets",
+  "repository": "https://github.com/Alterverse-tech/chrona-3d-assets",
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Chrona",
+    "shortDescription": "Create and reuse production-ready 3D assets.",
+    "longDescription": "Use Asset Center Library to search, preview, select, and import published personal GLBs, or use Character Workflow to create, rig, animate, and publish a new human-biped character.",
+    "developerName": "Chrona",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Search and import personal Asset Center GLBs",
+      "Plan game asset sourcing from a story",
+      "Create human-biped character models",
+      "Rig characters and retarget actions"
+    ],
+    "defaultPrompt": [
+      "Show me my Asset Center models and help me import one into this game.",
+      "Create a human character model from my prompt or reference image."
+    ]
+  },
+  "mcpServers": "./.mcp.json"
+}
