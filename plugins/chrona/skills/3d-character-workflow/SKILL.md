@@ -1,21 +1,23 @@
 ---
 name: 3d-character-workflow
-description: Use when a user asks Codex Desktop or Claude Code to create a human character model, convert an attached person or anime-character image to T-Pose or GLB, rig a biped, select character actions, or continue an existing Asset Center Character Workbench task.
+description: Use when a user asks Codex Desktop or Claude Code to create a human-biped character through reference selection, T-Pose, GLB generation, rigging, and action GLBs, or to continue that production workflow. Stop when the generated files are complete; Asset Center upload belongs to asset-center-library.
 ---
 
 # 3D Character Workflow
 
 ## Overview
 
-Keep the conversation and temporary concepts in the native agent host. Make Asset Center the sole production authority after the user explicitly chooses one supported human reference.
+Own only the human-biped production side: `reference → T-Pose → GLB → rig → actions`. Keep the conversation and temporary concepts in the native agent host, use the shared Character Workbench after the user selects one supported reference, and stop when the generated static, rigged, and selected action GLBs are complete.
+
+This skill never uploads completed GLBs to the Asset Center library. If the user later explicitly asks to upload them, hand the existing `workflowId` to `asset-center-library`; do not perform the upload from this skill.
 
 ## Best-effort update check
 
-This loaded Chrona plugin bundle is version `0.1.2`. On the first use of this skill in each new task, make one non-blocking update check for the current host only:
+This loaded Chrona plugin bundle is version `0.1.3`. On the first use of this skill in each new task, make one non-blocking update check for the current host only:
 
 - Give the shell call a five-second timeout. In Codex, refresh `chrona-3d-assets` with `codex plugin marketplace upgrade chrona-3d-assets --json`; in Claude Code, use `claude plugin marketplace update chrona-3d-assets`.
 - Read the configured marketplace root from that host's JSON marketplace list, then read the `chrona` version from `.agents/plugins/marketplace.json` for Codex or `.claude-plugin/marketplace.json` for Claude Code.
-- Only when the refreshed manifest contains a valid semantic version greater than `0.1.2`, append one short, non-blocking notice that names the available version and asks the user to say `更新插件`. Continue the character request without waiting.
+- Only when the refreshed manifest contains a valid semantic version greater than `0.1.3`, append one short, non-blocking notice that names the available version and asks the user to say `更新插件`. Continue the character request without waiting.
 - If the command fails, times out, lacks credentials, returns invalid data, or does not prove a newer version, continue silently. Do not retry or claim the plugin is current.
 
 Never clone or pull a repository, create a scheduler, edit plugin caches, or update both hosts during this check. Only after the user explicitly asks to update, run `codex plugin add chrona@chrona-3d-assets --json` in Codex or `claude plugin update chrona@chrona-3d-assets --scope user` in Claude Code. Tell the user the new version loads in the next task or session.
@@ -55,7 +57,7 @@ Temporary candidates are not workflow artifacts. Do not call `create_character_w
    - Show the imported preview and report from the refreshed workflow. Advisory warnings are shown without automatic regeneration. Wait for acceptance or an explicit request for one more version.
    - Older candidates remain workflow history; the latest imported candidate becomes active.
 6. In Claude Code, or any current host without native imagegen, retain the existing backend path: automatically start `analyze-image` after source attachment, wait and report it, then require explicit approval before starting backend `generate-tpose`.
-7. Explicit confirmation remains required for `generate-model`, candidate selection, and publishing. Summarize the exact operation before generation and wait for the user's approval.
+7. Explicit confirmation remains required for `generate-model` and candidate selection. Summarize the exact operation before generation and wait for the user's approval.
    - When a refreshed result contains top-level `previewUrl`, include it in the completion report as `[直接预览模型](<previewUrl>)`. This stable anonymous page opens the GLB itself rather than the Workbench canvas.
    - Use the stable top-level `previewUrl`, not an artifact's expiring signed `previewUrl` or `downloadUrl`.
    - Every time the completion report names a ready GLB file, use its entry from `deliveries` and include all four: `文件：<fileName>`, `[直接预览模型](<previewUrl>)` (or `[直接预览动作模型](<previewUrl>)` for an action), a Markdown download link from `downloadUrl`, and `[画布中预览模型](<workbenchUrl>)`.
@@ -64,9 +66,9 @@ Temporary candidates are not workflow artifacts. Do not call `create_character_w
 9. Use `confirm_character_output` only after the user names a T-Pose or static-model candidate, or the browser already marks that choice active. After the user confirms the final static model, pass `nextCommand: rig-check`; a successful Rig Check may continue into `rig` through the existing orchestrator without another prompt.
 10. When the validated sole active rigged output is ready, confirm it and present action selection without another binding confirmation.
 11. Use `select_character_actions` only after the user explicitly chooses the action list. Automatically start `retarget` with the returned latest version, call `wait_character_workflow`, and report the results without another start confirmation.
-   - When Retarget finishes with `ready_to_publish`, the top-level `previewUrl` points to the first selected successful action and opens directly in the anonymous animated model viewer. Report it as `[直接预览动作模型](<previewUrl>)` before asking whether to publish, and also include `[画布中预览模型](<workbenchUrl>)`.
+   - When Retarget finishes successfully, the top-level `previewUrl` points to the first selected successful action and opens directly in the anonymous animated model viewer. Report it as `[直接预览动作模型](<previewUrl>)` and also include `[画布中预览模型](<workbenchUrl>)`.
    - `actionPreviewUrls` contains each successful selected action's file name, stable direct viewer link, and refreshed download link. Include a download link for every successful action named in the report.
-12. Call `publish_character_workflow` only after an immediate explicit publish confirmation; set `confirmedByUser: true`.
+12. Report production as complete once the ready base GLB and every successful selected action GLB have been named with their preview and download links. Preserve the `workflowId` for a possible later handoff, then stop. Do not suggest, ask for, or start an Asset Center upload as an automatic next step.
 
 ## Version conflicts
 
@@ -74,7 +76,7 @@ Every write uses `expectedVersion`. If a tool returns `stale_version`, inspect `
 
 - If the browser already performed the requested action, acknowledge it and continue from the new version.
 - Otherwise explain that the workflow changed elsewhere and ask once before sending the write again.
-- Never automatically replay a paid stage, confirmation, or publish call.
+- Never automatically replay a paid stage or confirmation.
 
 ## Quick reference
 
@@ -89,7 +91,6 @@ Every write uses `expectedVersion`. If a tool returns `stale_version`, inspect `
 | Start an explicitly approved or prerequisite-authorized stage | `start_character_stage` |
 | Select and confirm a generated output | `confirm_character_output` |
 | Choose up to the workflow action limit | `select_character_actions` |
-| Publish after immediate confirmation | `publish_character_workflow` |
 
 ## Common mistakes
 
@@ -100,4 +101,5 @@ Every write uses `expectedVersion`. If a tool returns `stale_version`, inspect `
 - Regenerating automatically because of advisory quality warnings spends another attempt without approval; show the warning and wait.
 - Retrying 409 automatically can duplicate a user's browser action.
 - Sending sharks or quadrupeds into the biped path produces invalid T-Poses and rigs; stop at the capability boundary.
+- Continuing into Asset Center upload from this skill crosses the production boundary; stop after the GLB deliveries and wait for a later explicit upload request routed to `asset-center-library`.
 - Adding a chat surface inside Asset Center duplicates the native host; the browser remains canvas plus Inspector only.
