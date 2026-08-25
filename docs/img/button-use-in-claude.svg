@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="248" height="64" viewBox="0 0 248 64" role="img" aria-labelledby="claude-title">
+  <title id="claude-title">Use in Claude</title>
+  <rect width="248" height="64" rx="10" fill="#F2F0EE"/>
+  <g stroke="#E8916C" stroke-width="2.3" stroke-linecap="round">
+    <path d="M31 20V44"/>
+    <path d="M19 32H43"/>
+    <path d="M22.5 23.5L39.5 40.5"/>
+    <path d="M39.5 23.5L22.5 40.5"/>
+    <path d="M26.4 20.9L35.6 43.1"/>
+    <path d="M19.9 27.4L42.1 36.6"/>
+    <path d="M35.6 20.9L26.4 43.1"/>
+    <path d="M42.1 27.4L19.9 36.6"/>
+  </g>
+  <text x="55" y="40" fill="#2B1B10" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="20" font-weight="650">Use in Claude</text>
+</svg>

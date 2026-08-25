@@ -2,11 +2,9 @@
   <h1>Your AI 3D Asset Library & Character Assistant</h1>
   <p>Find and reuse production-ready GLB assets, or create, rig, animate, and publish human characters without leaving your coding workflow.</p>
   <p>
-    <a href="https://studio.13-216-49-19.sslip.io/asset-center/"><strong>Open Asset Center</strong></a>
-    &nbsp;·&nbsp;
-    <strong>Use in Codex</strong>
-    &nbsp;·&nbsp;
-    <strong>Use in Claude Code</strong>
+    <a href="https://studio.13-216-49-19.sslip.io/asset-center/"><img src="docs/img/button-open-asset-center.svg" alt="Open Asset Center" width="238"></a>
+    <img src="docs/img/button-use-in-codex.svg" alt="Use in Codex" width="238">
+    <img src="docs/img/button-use-in-claude.svg" alt="Use in Claude" width="238">
   </p>
   <h3>Install with one prompt</h3>
   <p>Paste this into any Codex task or Claude Code session. It installs the Chrona plugin, verifies it, and then asks you to start a new task or session.</p>

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="248" height="64" viewBox="0 0 248 64" role="img" aria-labelledby="asset-center-title">
+  <title id="asset-center-title">Open Asset Center</title>
+  <rect width="248" height="64" rx="10" fill="#111111"/>
+  <text x="20" y="40" fill="#FFFFFF" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="20" font-weight="650" textLength="163" lengthAdjust="spacingAndGlyphs">Open Asset Center</text>
+  <path d="M213 25L220 32L213 39M199 32H220" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
