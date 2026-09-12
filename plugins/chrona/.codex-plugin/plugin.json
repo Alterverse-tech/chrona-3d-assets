@@ -1,6 +1,6 @@
 {
   "name": "chrona",
-  "version": "0.1.3",
+  "version": "0.1.5",
   "description": "Create human character assets and safely reuse published Asset Center GLBs from one Chrona plugin.",
   "author": {
     "name": "Chrona"
@@ -11,7 +11,7 @@
   "interface": {
     "displayName": "Chrona",
     "shortDescription": "Create and reuse production-ready 3D assets.",
-    "longDescription": "Use Asset Center Library to search, preview, select, and import published personal GLBs, or use 3D Character Workflow to create, rig, animate, and publish a new human-biped character.",
+    "longDescription": "Use Asset Center Library to search, preview, select, and import published personal GLBs, or use 3D Character Workflow to create, rig, animate, and publish a new human-biped character with Meshy-T2 or Tripo.",
     "developerName": "Chrona",
     "category": "Developer Tools",
     "capabilities": [

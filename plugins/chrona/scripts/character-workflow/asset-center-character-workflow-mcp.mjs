@@ -74,7 +74,9 @@ export const toolDefinitions = [
       properties: {
         displayName: { type: "string", minLength: 1, maxLength: 80 },
         clientRequestId: { ...workflowId, description: "Stable request ID reused for retries of this selected source." },
-        client: { type: "string", enum: ["codex", "claude"] }
+        client: { type: "string", enum: ["codex", "claude"] },
+        provider: { type: "string", enum: ["tripo", "meshy"], default: "tripo" },
+        meshyApiKey: { type: "string", minLength: 12, maxLength: 304, pattern: "^msy_[A-Za-z0-9_-]+$", description: "Required only when provider is meshy; never echo this secret." }
       },
       required: ["displayName", "clientRequestId", "client"],
       additionalProperties: false

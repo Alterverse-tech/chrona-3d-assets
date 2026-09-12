@@ -104,10 +104,15 @@ export function createCharacterWorkflowClient({
     if (client !== "codex" && client !== "claude") {
       throw new CharacterWorkflowClientError("client must be codex or claude", { code: "invalid_input" });
     }
+    const provider = input?.provider ?? "tripo";
+    if (provider !== "tripo" && provider !== "meshy") {
+      throw new CharacterWorkflowClientError("provider must be tripo or meshy", { code: "invalid_input" });
+    }
+    const meshyApiKey = provider === "meshy" ? requireMeshyApiKey(input?.meshyApiKey) : undefined;
     const created = await requestJson("/character-workflows", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ displayName, clientRequestId, origin: { client } })
+      body: JSON.stringify({ displayName, clientRequestId, origin: { client }, provider, ...(meshyApiKey ? { meshyApiKey } : {}) })
     });
     return get({ workflowId: created.workflow?.id });
   }
@@ -460,6 +465,13 @@ function requireText(value, label, maxLength) {
     throw new CharacterWorkflowClientError(`${label} is required`, { code: "invalid_input" });
   }
   return text;
+}
+
+function requireMeshyApiKey(value) {
+  if (typeof value !== "string" || !/^msy_[A-Za-z0-9_-]{8,300}$/.test(value.trim())) {
+    throw new CharacterWorkflowClientError("meshyApiKey is required and must be a valid Meshy API key", { code: "invalid_input" });
+  }
+  return value.trim();
 }
 
 function requireId(value, label) {
