@@ -132,6 +132,10 @@ The Skill owns the Asset Center library boundary in both directions: it imports 
 
 Use `Chrona: 3D Character Workflow` to create a human-biped character and its action GLBs from a chosen visual reference. The Skill stops when those files are complete.
 
+Choose **Tripo** or **Meshy-T2** once (Meshy requires your own API key). After the initial credit-use notice, T-Pose generation, static modeling, Rig Check, and rigging run automatically without intermediate acceptance prompts. The next normal pause is choosing actions; that choice starts their GLB generation. Blocking failures and paid retries still require attention, and an explicitly requested step-by-step review remains supported.
+
+Normal runs reuse returned workflow snapshots and backend GLB validation, review the T-Pose once without a numeric score, and leave provider action-library lookup to the backend. Detailed audit logs and extra file/browser inspections are opt-in; previews and downloads are delivered together at the end. The existing best-effort plugin update check is unchanged.
+
 <img src="docs/img/3d-character-workflow-in-action.png" alt="Chrona 3D Character Workflow in Codex and Asset Center Workbench: uploaded reference image progresses through T-Pose, 3D Model, Rigged Model, and Run and Walk action GLBs" width="100%">
 
 <p align="center"><sub><b>上传参考图 → T-Pose → 3D Model → Rigged Model → Run / Walk 动作 GLB</b><br>Codex conversation and Asset Center Workbench advance the same workflow.</sub></p>
@@ -179,7 +183,7 @@ This repository is the canonical source for the `chrona` plugin. Its current pub
 
 Installation itself needs no Asset Center token. On the first authenticated Asset Center Library or 3D Character Workflow operation, Chrona opens the Asset Center OAuth flow in the browser. Tokens remain on the user's machine.
 
-Never paste an Asset Center token into chat or source code. `ASSET_CENTER_SERVICE_TOKEN` is only an optional environment override for CI or shared runners. Character generation may use provider credits, so paid stages stay behind explicit confirmation; Asset Center upload is a separate, single-use action that requires an immediate explicit request.
+Never paste an Asset Center token into chat or source code. `ASSET_CENTER_SERVICE_TOKEN` is only an optional environment override for CI or shared runners. Character generation may use provider credits: the initial provider choice authorizes one disclosed automatic pipeline through rigging, and the later action choice authorizes animation. Paid retries are not automatic. Asset Center upload remains a separate, single-use action that requires an immediate explicit request.
 
 ## License
 

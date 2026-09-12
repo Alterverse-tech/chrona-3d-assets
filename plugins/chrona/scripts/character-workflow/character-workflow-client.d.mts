@@ -22,7 +22,7 @@ export interface CodexTPoseQualityReport {
   identityPreserved: boolean;
   whiteBackground: boolean;
   passed: boolean;
-  score: number;
+  score?: number;
   issues: string[];
   source: "codex-host";
 }
@@ -41,6 +41,7 @@ export interface CharacterWorkflowSummary {
   version: number;
   status: string;
   stage: string;
+  provider: "tripo" | "meshy";
   origin?: { client: CharacterWorkflowClientName; linkedAt: string };
   activeArtifactIds: Record<string, string>;
   selectedActionIds: string[];
