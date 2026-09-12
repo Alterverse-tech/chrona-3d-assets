@@ -367,7 +367,9 @@ function normalizeSnapshot(payload, apiBaseUrl) {
     previewUrl: artifact.preview?.url,
     downloadUrl: artifact.download?.url,
     directPreviewUrl: artifactDirectPreviewUrl(workbenchUrl, artifact.id, artifact.fileName),
-    metadata: artifact.metadata
+    metadata: artifact.metadata,
+    provider: artifact.provider,
+    providerTaskId: artifact.providerTaskId
   })) : [];
   const actionPreviewUrls = readyActionPreviewUrls(artifacts, payload.actionTasks, workflow.selectedActionIds);
   const preferredPreview = preferredReadyGlb(artifacts, workflow, actionPreviewUrls);
@@ -378,6 +380,7 @@ function normalizeSnapshot(payload, apiBaseUrl) {
     version: workflow.version,
     status: workflow.status,
     stage: workflow.stage,
+    provider: workflow.provider ?? "tripo",
     ...(workflow.origin ? { origin: workflow.origin } : {}),
     activeArtifactIds: workflow.activeArtifactIds ?? {},
     selectedActionIds: workflow.selectedActionIds ?? [],

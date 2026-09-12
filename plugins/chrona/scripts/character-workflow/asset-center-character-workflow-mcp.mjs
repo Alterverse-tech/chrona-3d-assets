@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 import { CharacterWorkflowClientError, createCharacterWorkflowClient } from "./character-workflow-client.mjs";
 
 const SERVER_NAME = "chrona-character-workflow";
-const SERVER_VERSION = "0.1.3";
+const SERVER_VERSION = "0.1.6";
 const READ = { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true };
 const WRITE = { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true };
 
@@ -58,7 +58,6 @@ const qualityReport = {
     "identityPreserved",
     "whiteBackground",
     "passed",
-    "score",
     "issues",
     "source"
   ],
@@ -112,7 +111,7 @@ export const toolDefinitions = [
   },
   {
     name: "attach_character_tpose",
-    description: "Import exactly one Codex-native T-Pose candidate and its Codex analysis and quality report into the shared workflow after explicit user approval.",
+    description: "Import one Codex-native T-Pose with a single quick identity/full-body/pose review under the user's automatic-pipeline choice. Fill the boolean report honestly, omit the optional score, and keep notes brief. No separate approval or scoring round; blocking failures stop continuation. Use the returned snapshot for the next step.",
     inputSchema: {
       type: "object",
       properties: {
@@ -129,7 +128,7 @@ export const toolDefinitions = [
   },
   {
     name: "get_character_workflow",
-    description: "Read the latest shared Asset Center workflow snapshot before discussing or mutating it.",
+    description: "Refresh workflow state after user interaction, task resumption, a version conflict, or an expired delivery link. During continuous execution, reuse the snapshot/version returned by the previous tool instead of an extra GET.",
     inputSchema: {
       type: "object",
       properties: { workflowId },
@@ -140,7 +139,7 @@ export const toolDefinitions = [
   },
   {
     name: "wait_character_workflow",
-    description: "Poll the shared workflow for a version change or provider-stage completion for at most 25 seconds.",
+    description: "Wait while a stage is running, using afterVersion from the previous tool result. Returns the latest snapshot within 25 seconds; use it directly without surrounding GET calls or separate provider polls.",
     inputSchema: {
       type: "object",
       properties: {
@@ -155,7 +154,7 @@ export const toolDefinitions = [
   },
   {
     name: "start_character_stage",
-    description: "Start an Asset Center character stage. `analyze-image`, `rig-check`, and `retarget` are automatically authorized only after their documented source-selection, static-model-confirmation, or action-selection prerequisites; other provider stages require explicit approval. Generation may consume provider credits.",
+    description: "Start an Asset Center character stage using the current workflow version. After the user selects a provider with the automatic-pipeline and credit disclosure, analysis, T-Pose, model generation, Rig Check, and rigging proceed without repeated chat approval, while retaining quality and backend confirmation prerequisites. Retarget requires the user's action choice. Stop before paid retries or provider changes. Generation may consume provider credits.",
     inputSchema: {
       type: "object",
       properties: { workflowId, expectedVersion, command },
@@ -166,14 +165,14 @@ export const toolDefinitions = [
   },
   {
     name: "confirm_character_output",
-    description: "Select an optional generated candidate, confirm that existing stage, and optionally start a next command while carrying server versions safely. A user-confirmed final static model may use nextCommand rig-check without another stage-start prompt; other next commands require separate approval.",
+    description: "Select an optional generated candidate, confirm that existing stage, and optionally start a next command while carrying server versions safely. Under the user's disclosed automatic-pipeline choice, automatically confirm a usable T-Pose with nextCommand generate-model, then a validated static model with nextCommand rig-check, then the validated rig to reach action selection. These state-machine confirmations do not require repeated user acceptance prompts. Stop on blocking quality failures or conflicting workflow changes.",
     inputSchema: {
       type: "object",
       properties: {
         workflowId,
         expectedVersion,
         stage: { type: "string", enum: ["tpose", "model_generation", "rigging"] },
-        artifactId: workflowId,
+        artifactId: { ...workflowId, description: "Omit when the intended output is already active; only supply to change the selected candidate." },
         nextCommand: command
       },
       required: ["workflowId", "expectedVersion", "stage"],
@@ -183,7 +182,7 @@ export const toolDefinitions = [
   },
   {
     name: "select_character_actions",
-    description: "Choose actions for a confirmed rigged human model using the workflow's current action catalog and version. The user's explicit action choice authorizes starting Retarget immediately without another confirmation prompt.",
+    description: "Choose user-selected actions from the workflow catalog. The backend resolves the provider's action library; do not query Meshy separately. Use the returned version to start Retarget immediately without another GET or confirmation prompt.",
     inputSchema: {
       type: "object",
       properties: {

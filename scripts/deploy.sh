@@ -4,6 +4,7 @@ set -euo pipefail
 
 deploy_repo_root=$(git rev-parse --show-toplevel)
 cd "$deploy_repo_root"
+deploy_plugin_version=$(node -p "require('./plugins/chrona/.codex-plugin/plugin.json').version")
 
 deploy_branch=$(git branch --show-current)
 if [[ -z "$deploy_branch" || "$deploy_branch" == "main" || "$deploy_branch" == "master" ]]; then
@@ -45,4 +46,4 @@ codex plugin add chrona@chrona-3d-assets --json
 
 echo "feature=$deploy_feature_commit"
 echo "main=$deploy_main_commit"
-echo "chrona plugin refreshed; start a new task to load version 0.1.3"
+echo "chrona plugin refreshed; start a new task to load version $deploy_plugin_version"
