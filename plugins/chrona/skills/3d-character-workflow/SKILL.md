@@ -1,13 +1,13 @@
 ---
 name: 3d-character-workflow
-description: Use when a user asks Codex Desktop or Claude Code to create a human-biped character through reference selection, T-Pose, GLB generation, rigging, and action GLBs with Meshy-T2 or Tripo, or to continue that production workflow. Stop when the generated files are complete; Asset Center upload belongs to asset-center-library.
+description: Use when a user asks Codex Desktop or Claude Code to create a human-biped character through reference selection, provider-specific T-Pose/GLB generation, rigging, and action GLBs with Meshy-T2 or Tripo, or to continue that production workflow. Only the Meshy-T2 provider route can produce the T-Pose directly during Image-to-3D. Stop when the generated files are complete; Asset Center upload belongs to asset-center-library.
 ---
 
 # 3D Character Workflow
 
 ## Overview
 
-Own only the human-biped production side: `reference → T-Pose → Image-to-Model → static GLB → Rig Check → rig → actions`. Keep the conversation and temporary concepts in the native agent host, use the shared Character Workbench after the user selects one supported reference, and stop when the generated static, rigged, and selected action GLBs are complete.
+Own only the human-biped production side: `reference → provider-specific T-Pose/Image-to-Model → static GLB → Rig Check → rig → actions`. When `provider = Meshy`, Image-to-3D outputs the T-Pose directly; when `provider = Tripo`, retain the separate T-Pose route. Keep the conversation and temporary concepts in the native agent host, use the shared Character Workbench after the user selects one supported reference, and stop when the generated static, rigged, and selected action GLBs are complete.
 
 This skill never uploads completed GLBs to the Asset Center library. If the user later explicitly asks to upload them, hand the existing `workflowId` to `asset-center-library`; do not perform the upload from this skill.
 
@@ -51,7 +51,7 @@ Temporary candidates are not workflow artifacts. Do not call `create_character_w
 
 Before creating the workflow, ask the user to choose exactly one provider and keep that provider for every later 3D stage. Explain in this same prompt that choosing a provider starts one automatic T-Pose → static GLB → Rig Check → rigging attempt, that generation/rigging may consume credits, and that the next normal pause is action selection:
 
-1. `Meshy (Meshy-T2)` — the user must provide their own Meshy API key when the workflow is created. The backend encrypts it at rest and never returns it in workflow snapshots. For the standalone fallback script, use `MESHY_API_KEY`; never write the key into this skill, source files, logs, or the final response.
+1. `Meshy (Meshy-T2)` — the user must provide their own Meshy API key when the workflow is created. Before asking for it, show the persistent copy-paste setup commands in [references/meshy-provider.md](references/meshy-provider.md) for macOS and Windows PowerShell; both commands read the key through a hidden local prompt and configure `MESHY_API_KEY` for future sessions. Meshy Image-to-3D must receive `model_type: "smart-topology"`, `ai_model: "meshy-t2"`, and `pose_mode: "t-pose"`; this route creates the T-Pose-capable static model directly, so do not require Codex/native imagegen or a separate external T-Pose image. The backend encrypts the key at rest and never returns it in workflow snapshots. For the standalone fallback script, use `MESHY_API_KEY`; never put the key in command-line arguments, shell history, this skill, source files, logs, or the final response.
 2. `Tripo` — use the existing Asset Center/Tripo route and its configured key pool.
 
 The provider choice is sticky for the workflow. Do not generate the static model with Meshy and then silently send it to Tripo for rigging or animation, or the reverse. If the user has not chosen a provider, stop before any paid 3D request and ask the one focused choice question.
@@ -71,26 +71,30 @@ When Meshy is selected, read [references/meshy-provider.md](references/meshy-pro
 
 ## Advance the shared workflow
 
-1. Call `create_character_workflow` once with a stable `clientRequestId`, the current host client, and the selected `provider`; include `meshyApiKey` only for Meshy.
+1. Call `create_character_workflow` once with a stable `clientRequestId`, the current host client, and the selected `provider`. For Meshy, omit `meshyApiKey` when the host process has `MESHY_API_KEY` configured; the client reads that local variable and sends it through the protected backend request. Use the explicit `meshyApiKey` field only when the host provides a secure secret-input path; never ask the user to paste a key into chat.
 2. Call `attach_character_source` with the returned `workflowId` and `version`.
 3. Return the `workbenchUrl`; the browser and native chat now refer to the same opaque workflow ID.
-4. Route the T-Pose step from the current host's capabilities, regardless of `workflow.origin`. A workflow created by Claude may later continue in Codex, and vice versa.
-5. When the current host is Codex Desktop with native image understanding and imagegen:
+4. Route the T-Pose step by provider before checking host capabilities, regardless of `workflow.origin`. A workflow created by Claude may later continue in Codex, and vice versa.
+5. When Meshy is selected:
+   - Do not call native imagegen, `materialize_character_source`, `analyze-image`, `generate-tpose`, or `attach_character_tpose` to create an external T-Pose image.
+   - Start Meshy Image-to-3D from the attached reference with `model_type: "smart-topology"`, `ai_model: "meshy-t2"`, `pose_mode: "t-pose"`, and the GLB target format. Treat the returned static GLB as the Meshy T-Pose output and continue directly to backend validation, `rig-check`, and rigging.
+   - Do not call `confirm_character_output(stage: tpose)` for a separate image artifact; the Meshy Image-to-3D result is the first generated model output.
+6. When the current host is Codex Desktop with native image understanding and imagegen, and Tripo is selected:
    - Understand and summarize the selected source in Codex. Do not call backend `analyze-image` or `generate-tpose` on this Codex-native branch.
    - Briefly describe the T-Pose conversion and continue without a confirmation question. Preserve identity and clothing, remove background/handheld distractions, and conservatively complete cropped body regions for a full-body front T-Pose; disclose these defaults in the progress update.
    - Call `materialize_character_source`, then invoke native imagegen exactly once with that local reference for the authorized pipeline attempt.
    - Perform the quick review above, then call `attach_character_tpose` once with `analysis` and the compact `qualityReport`. Generate and import exactly one candidate per attempt; do not mark a failed check as passed to keep moving.
    - Continue from the returned usable active candidate without another GET or acceptance prompt. Briefly mention actionable warnings; do not produce a long quality report or regenerate for advisory warnings alone.
    - Older candidates remain workflow history; the latest imported candidate becomes active.
-6. In Claude Code, or any current host without native imagegen, retain the existing backend path: automatically start `analyze-image` after source attachment, wait and report it, then automatically start backend `generate-tpose` if analysis supports the human-biped route. Use the ready active candidate that passes the available quality checks; if no active choice exists, choose the latest passing candidate. Do not ask for routine candidate acceptance.
-7. With a usable T-Pose, automatically call `confirm_character_output(stage: tpose, nextCommand: generate-model)` using the returned version. Omit `artifactId` when the intended candidate is already active, avoiding an unnecessary selection write. Briefly report the provider and operation without a confirmation question. For Meshy, use `Meshy-T2 Image-to-3D → static GLB`; for Tripo, keep the existing operation.
+7. In Claude Code, or any current host without native imagegen, and when Tripo is selected, retain the existing backend path: automatically start `analyze-image` after source attachment, wait and report it, then automatically start backend `generate-tpose` if analysis supports the human-biped route. Use the ready active candidate that passes the available quality checks; if no active choice exists, choose the latest passing candidate. Do not ask for routine candidate acceptance.
+8. With a usable Tripo T-Pose, automatically call `confirm_character_output(stage: tpose, nextCommand: generate-model)` using the returned version. Omit `artifactId` when the intended candidate is already active, avoiding an unnecessary selection write. Briefly report the provider and operation without a confirmation question. For Meshy, start `generate-model` directly from the attached reference using the Meshy `pose_mode: "t-pose"` request; do not create or confirm a separate T-Pose image artifact.
    - Tripo: continue through the shared Character Workbench `generate-model`, `rig-check`, `rig`, and `retarget` stages; each stage uses Tripo.
-   - Meshy: use the same shared Character Workbench commands after the validated T-Pose. The backend selects Meshy-T2 for `generate-model`, Meshy local preflight plus Meshy rigging for `rig-check`/`rig`, and Meshy's animation library/API for `retarget`. Never mix providers inside one workflow.
-8. Use `wait_character_workflow` only while a stage is running, with `afterVersion` from the latest tool result. Its returned snapshot is sufficient to advance; do not add GET → wait → GET around each poll. Every mutation still carries `expectedVersion`; conflicts follow the rule below without automatic replay.
-9. When the active static GLB is ready and its backend validation has no blocking failure, automatically call `confirm_character_output(stage: model_generation, nextCommand: rig-check)`, omitting `artifactId` for the already active model. A successful Rig Check continues into `rig` through the orchestrator. Keep these backend confirmations and version checks; do not ask for model acceptance or separately inspect the same GLB.
-10. When the validated active rigged output is ready, automatically confirm it with `confirm_character_output(stage: rigging)`, then pause for the user to choose or enter actions. Explain that this choice starts the selected actions and may consume credits. Do not ask for another binding confirmation or reuse a previous task's action choices.
-11. Use `select_character_actions` only after the user explicitly chooses the action list. Automatically start `retarget` with the returned latest version, call `wait_character_workflow`, and report the results without another start confirmation.
-12. Deliver once: use `deliveries` for ready static, rigged, and selected action files, with one compact row per file containing its name, stable `previewUrl`, and `downloadUrl`; include the shared `workbenchUrl` only once. The top-level `previewUrl` opens the first successful selected action. If download links are missing/expired, refresh once; if still absent, mark `下载链接暂不可用`. Do not fetch the files to validate the links. Preserve `workflowId`, then stop; do not suggest or start an Asset Center upload.
+   - Meshy: after direct Meshy Image-to-3D returns the active static GLB, continue with the shared Character Workbench `rig-check`, `rig`, and `retarget` commands. The backend selects Meshy-T2 for `generate-model`, Meshy local preflight plus Meshy rigging for `rig-check`/`rig`, and Meshy's animation library/API for `retarget`. Never mix providers inside one workflow.
+9. Use `wait_character_workflow` only while a stage is running, with `afterVersion` from the latest tool result. Its returned snapshot is sufficient to advance; do not add GET → wait → GET around each poll. Every mutation still carries `expectedVersion`; conflicts follow the rule below without automatic replay.
+10. When the active static GLB is ready and its backend validation has no blocking failure, automatically call `confirm_character_output(stage: model_generation, nextCommand: rig-check)`, omitting `artifactId` for the already active model. A successful Rig Check continues into `rig` through the orchestrator. Keep these backend confirmations and version checks; do not ask for model acceptance or separately inspect the same GLB.
+11. When the validated active rigged output is ready, automatically confirm it with `confirm_character_output(stage: rigging)`, then pause for the user to choose or enter actions. Explain that this choice starts the selected actions and may consume credits. Do not ask for another binding confirmation or reuse a previous task's action choices.
+12. Use `select_character_actions` only after the user explicitly chooses the action list. Automatically start `retarget` with the returned latest version, call `wait_character_workflow`, and report the results without another start confirmation.
+13. Deliver once: use `deliveries` for ready static, rigged, and selected action files, with one compact row per file containing its name, stable `previewUrl`, and `downloadUrl`; include the shared `workbenchUrl` only once. The top-level `previewUrl` opens the first successful selected action. If download links are missing/expired, refresh once; if still absent, mark `下载链接暂不可用`. Do not fetch the files to validate the links. Preserve `workflowId`, then stop; do not suggest or start an Asset Center upload.
 
 For Meshy, summarize actual `consumedCredits` from the returned artifacts. Task IDs are already in the snapshot/traces; expand them only for troubleshooting or a requested test report. Never echo the API key.
 
@@ -108,8 +112,8 @@ Every write uses `expectedVersion`. If a tool returns `stale_version`, inspect `
 |---|---|
 | Create the formal draft after source selection | `create_character_workflow` |
 | Upload only the chosen reference | `attach_character_source` |
-| Cache the active source for Codex-native imagegen | `materialize_character_source` |
-| Import one Codex-native T-Pose and its report | `attach_character_tpose` |
+| Cache the active source for Tripo/native imagegen | `materialize_character_source` |
+| Import one Tripo/native T-Pose and its report | `attach_character_tpose` |
 | Refresh browser/native shared state | `get_character_workflow` |
 | Wait for provider completion | `wait_character_workflow` |
 | Start a stage covered by the pipeline or action choice | `start_character_stage` |
@@ -120,7 +124,8 @@ Every write uses `expectedVersion`. If a tool returns `stale_version`, inspect `
 
 - Creating a draft for every concept pollutes workflow history; wait for selection.
 - Treating the browser as a second workflow creates divergence; always use the returned `workflowId`.
-- Calling backend `analyze-image` or `generate-tpose` from the Codex-native branch bypasses the host-capability route.
+- Forcing Meshy through Codex/native imagegen or a separate `generate-tpose` artifact wastes image-generation quota and breaks the provider route; pass Meshy's `pose_mode: "t-pose"` on Image-to-3D instead.
+- Calling backend `analyze-image` or `generate-tpose` for Meshy is unnecessary; those steps remain only for the Tripo path.
 - Asking again for T-Pose or static-model acceptance after the disclosed automatic-pipeline choice adds redundant gates. Confirm usable outputs through the existing tools and continue until action selection.
 - Skipping required backend confirmation calls, quality checks, or provider/key selection is not automation; it breaks the workflow prerequisites.
 - Regenerating automatically because of advisory quality warnings spends another attempt without approval; show the warning and continue with the usable output instead.
