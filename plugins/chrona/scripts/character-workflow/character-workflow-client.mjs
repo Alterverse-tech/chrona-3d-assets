@@ -4,9 +4,8 @@ import os from "node:os";
 import path from "node:path";
 import process from "node:process";
 
-import { ensureOAuthAccessToken } from "./oauth-login.mjs";
+import { configuredServiceToken, ensureOAuthAccessToken, resolveApiBaseUrl } from "../shared/chrona-auth.mjs";
 
-const DEFAULT_API_BASE_URL = "https://studio.13-216-49-19.sslip.io/codex/v1";
 const MAX_SOURCE_BYTES = 10 * 1024 * 1024;
 const STAGE_COMMANDS = new Set(["analyze-image", "generate-tpose", "generate-model", "rig-check", "rig", "retarget"]);
 
@@ -23,7 +22,7 @@ export class CharacterWorkflowClientError extends Error {
 }
 
 export function createCharacterWorkflowClient({
-  apiBaseUrl = process.env.ASSET_CENTER_CODEX_API_BASE_URL || DEFAULT_API_BASE_URL,
+  apiBaseUrl = resolveApiBaseUrl(),
   accessTokenProvider = ensureOAuthAccessToken,
   fetchImpl = fetch,
   sleepImpl = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds)),
@@ -34,8 +33,9 @@ export function createCharacterWorkflowClient({
   const origin = new URL(baseUrl).origin;
   const resolvedCacheRoot = path.resolve(cacheRoot);
 
+  // Plugin-wide Chrona authentication: explicit service token override > shared OAuth sign-in.
   async function accessToken(forceRefresh = false) {
-    const serviceToken = process.env.ASSET_CENTER_SERVICE_TOKEN?.trim();
+    const serviceToken = configuredServiceToken();
     if (serviceToken) return serviceToken;
     return accessTokenProvider(origin, { forceRefresh });
   }
@@ -49,7 +49,7 @@ export function createCharacterWorkflowClient({
         ...(init.headers ?? {})
       }
     });
-    if (response.status === 401 && retryAuth && !process.env.ASSET_CENTER_SERVICE_TOKEN) {
+    if (response.status === 401 && retryAuth && !configuredServiceToken()) {
       await accessTokenProvider(origin, { forceRefresh: true });
       return requestJson(route, init, false);
     }

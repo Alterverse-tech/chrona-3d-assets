@@ -7,12 +7,11 @@ import process from "node:process";
 
 import { sourcingBoardHtml } from "./sourcing-board-resource.mjs";
 import { buildSourcingProposal, normalizeConfirmedSourcingPlan } from "./sourcing-contract.mjs";
-import { ensureOAuthAccessToken } from "./oauth-login.mjs";
+import { configuredServiceToken, resolveAccessToken, resolveApiBaseUrl } from "../shared/chrona-auth.mjs";
 
 const SERVER_NAME = "chrona-asset-center-library";
-const SERVER_VERSION = "0.1.6";
+const SERVER_VERSION = "0.1.7";
 const PROTOCOL_VERSION = "2024-11-05";
-const DEFAULT_API_BASE_URL = "https://studio.13-216-49-19.sslip.io/codex/v1";
 const DEFAULT_TARGET_DIRECTORY = "public/assets/asset-center";
 const LOCK_SCHEMA = "shark.asset-center-lock/v1";
 const ASSET_SCHEMA = "shark.asset-center-import/v1";
@@ -678,30 +677,18 @@ async function apiJson(resource, options = {}) {
   return payload;
 }
 
-/** 鉴权解析: 显式 Service Token(向后兼容) > OAuth 浏览器授权登录(免配置) */
+/** 鉴权解析: 走 Chrona 插件级统一认证(显式 Service Token > 两个 Skill 共享的 OAuth 浏览器授权登录) */
 async function resolveBearerToken(forceFreshAuth = false) {
-  const configured = envServiceToken();
-  if (configured) return configured;
   const issuerOrigin = new URL(apiBaseUrl()).origin;
-  return ensureOAuthAccessToken(issuerOrigin, { forceRefresh: forceFreshAuth });
+  return resolveAccessToken(issuerOrigin, { forceRefresh: forceFreshAuth });
 }
 
 function apiBaseUrl() {
-  const configured = (process.env.ASSET_CENTER_CODEX_API_BASE_URL || DEFAULT_API_BASE_URL).trim().replace(/\/+$/, "");
-  let parsed;
-  try {
-    parsed = new URL(configured);
-  } catch {
-    throw new Error("ASSET_CENTER_CODEX_API_BASE_URL must be a valid HTTP(S) URL");
-  }
-  if (!['http:', 'https:'].includes(parsed.protocol) || parsed.username || parsed.password || parsed.search || parsed.hash) {
-    throw new Error("ASSET_CENTER_CODEX_API_BASE_URL must be an HTTP(S) URL without credentials, query, or fragment");
-  }
-  return configured;
+  return resolveApiBaseUrl();
 }
 
 function envServiceToken() {
-  return process.env.ASSET_CENTER_SERVICE_TOKEN?.trim() || undefined;
+  return configuredServiceToken();
 }
 
 async function resolveWorkspaceRoot(value) {
