@@ -28,8 +28,8 @@ Chrona
 
 | Skill | Type | Owns | Authentication |
 |---|---|---|---|
-| `Chrona: Asset Center Library` | Skill + MCP | Asset Center boundary: explicit upload of completed Character Workflow GLBs, plus semantic recall, search, preview, confirmed selection, and safe GLB import | Asset Center OAuth / service token |
-| `Chrona: 3D Character Workflow` | Skill + MCP | Human-biped production only: reference → T-Pose → GLB → rig → actions; stops when the generated files are ready | Asset Center OAuth / service token |
+| `Chrona: Asset Center Library` | Skill + MCP | Asset Center boundary: explicit upload of completed Character Workflow GLBs, plus semantic recall, search, preview, confirmed selection, and safe GLB import | Shared Chrona OAuth sign-in / service token |
+| `Chrona: 3D Character Workflow` | Skill + MCP | Human-biped production only: reference → T-Pose → GLB → rig → actions; stops when the generated files are ready | Shared Chrona OAuth sign-in / service token |
 
 `3D Character Workflow` produces ready character and linked action GLBs without uploading them. If the user later explicitly asks to upload the completed set, `Asset Center Library` handles that Asset Center mutation. It also finds published assets and brings only confirmed files into a game project.
 
@@ -181,7 +181,7 @@ This repository is the canonical source for the `chrona` plugin. Its current pub
 
 ## Access and authentication
 
-Installation itself needs no Asset Center token. On the first authenticated Asset Center Library or 3D Character Workflow operation, Chrona opens the Asset Center OAuth flow in the browser. Tokens remain on the user's machine.
+Installation itself needs no Asset Center token. Both Skills authenticate through one plugin-wide Chrona sign-in: the first authenticated Asset Center Library or 3D Character Workflow operation opens the Asset Center OAuth flow in the browser once, registered as the single OAuth client `Chrona` with the asset read and write scopes, and the cached tokens are shared by both MCP servers. Tokens remain on the user's machine; signing in from either Skill signs in the other.
 
 Never paste an Asset Center token into chat or source code. `ASSET_CENTER_SERVICE_TOKEN` is only an optional environment override for CI or shared runners. Character generation may use provider credits: the initial provider choice authorizes one disclosed automatic pipeline through rigging, and the later action choice authorizes animation. Paid retries are not automatic. Asset Center upload remains a separate, single-use action that requires an immediate explicit request.
 

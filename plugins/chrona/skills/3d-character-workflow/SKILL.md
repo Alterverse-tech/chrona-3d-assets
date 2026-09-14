@@ -11,13 +11,17 @@ Own only the human-biped production side: `reference → T-Pose → Image-to-Mod
 
 This skill never uploads completed GLBs to the Asset Center library. If the user later explicitly asks to upload them, hand the existing `workflowId` to `asset-center-library`; do not perform the upload from this skill.
 
+## Authentication
+
+This skill uses the same plugin-wide Chrona sign-in as `asset-center-library`; there is nothing to configure. The first authenticated Character Workbench call opens Asset Center's authorization page in the user's browser (Google or email code) as the single `Chrona` OAuth client, and the cached tokens stay on the user's machine and serve both skills. If a request reports pending authorization, tell the user to finish the page that just opened; when no browser appeared, give them the authorization link printed on stderr. Never ask the user to paste a Service Token or any token into chat or source code — `ASSET_CENTER_SERVICE_TOKEN` is only an optional environment override for CI or shared runners.
+
 ## Best-effort update check
 
-This loaded Chrona plugin bundle is version `0.1.6`. On the first use of this skill in each new task, make one non-blocking update check for the current host only:
+This loaded Chrona plugin bundle is version `0.1.7`. On the first use of this skill in each new task, make one non-blocking update check for the current host only:
 
 - Give the shell call a five-second timeout. In Codex, refresh `chrona-3d-assets` with `codex plugin marketplace upgrade chrona-3d-assets --json`; in Claude Code, use `claude plugin marketplace update chrona-3d-assets`.
 - Read the configured marketplace root from that host's JSON marketplace list, then read the `chrona` version from `.agents/plugins/marketplace.json` for Codex or `.claude-plugin/marketplace.json` for Claude Code.
-- Only when the refreshed manifest contains a valid semantic version greater than `0.1.6`, append one short, non-blocking notice that names the available version and asks the user to say `更新插件`. Continue the character request without waiting.
+- Only when the refreshed manifest contains a valid semantic version greater than `0.1.7`, append one short, non-blocking notice that names the available version and asks the user to say `更新插件`. Continue the character request without waiting.
 - If the command fails, times out, lacks credentials, returns invalid data, or does not prove a newer version, continue silently. Do not retry or claim the plugin is current.
 
 Never clone or pull a repository, create a scheduler, edit plugin caches, or update both hosts during this check. Only after the user explicitly asks to update, run `codex plugin add chrona@chrona-3d-assets --json` in Codex or `claude plugin update chrona@chrona-3d-assets --scope user` in Claude Code. Tell the user the new version loads in the next task or session.

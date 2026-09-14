@@ -35,6 +35,6 @@ claude plugin list
 
 ## Authentication
 
-Installation does not require an Asset Center token. On first library or workflow use, Asset Center opens its OAuth authorization flow. Never paste service tokens into chat or source code.
+Installation does not require an Asset Center token. On first library or workflow use, Chrona opens the Asset Center OAuth authorization flow once; both Skills share that single Chrona sign-in and its locally cached tokens. Never paste service tokens into chat or source code.
 
 Start a new Codex task or Claude Code session after installation so the new Skills and MCP tools are discovered.
