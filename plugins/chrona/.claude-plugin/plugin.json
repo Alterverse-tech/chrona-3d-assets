@@ -1,6 +1,6 @@
 {
   "name": "chrona",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Create human character assets and safely reuse published Asset Center GLBs from one Chrona plugin.",
   "author": {
     "name": "Chrona"
